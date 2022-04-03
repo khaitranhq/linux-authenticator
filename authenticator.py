@@ -46,8 +46,8 @@ class Application(Gtk.Window):
                 continue
             name_label = Gtk.Label(label=account_name)
             code_label = Gtk.Label(label=self.authenticator.get_code(account["name"]))
-            copy_button = Gtk.Button(label = 'Copy')
-            copy_button.connect('clicked', self.copy_text, account_name)
+            copy_button = Gtk.Button(label="Copy")
+            copy_button.connect("clicked", self.copy_text, account_name)
             code_box.pack_start(name_label, True, True, 0)
             code_box.pack_start(code_label, True, True, 0)
             code_box.pack_start(copy_button, True, True, 0)
@@ -58,7 +58,7 @@ class Application(Gtk.Window):
         self.add(root_box)
 
     def copy_text(self, button, name):
-        print('go to this')
+        print("go to this")
         print(name)
         for account in self.account_boxes:
             if account.name_label.get_text() == name:
@@ -103,7 +103,7 @@ def main():
     timeout_interval = (
         30 - current_second if current_second <= 30 else 60 - current_second
     )
-#      print(current_second)
+    #      print(current_second)
     #  print(timeout_interval)
 
     timeout_id = GLib.timeout_add(
@@ -113,4 +113,5 @@ def main():
     Gtk.main()
 
 
-main()
+if __name__ == "__main__":
+    main()

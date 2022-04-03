@@ -3,7 +3,8 @@ import os
 import json
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-CONFIG_DIR = f"{ROOT_DIR}/../secret_keys.json"
+HOME = os.environ["HOME"]
+CONFIG_DIR = f"{HOME}/.config/authenticator/secret_keys.json"
 
 
 class Authenticator:
@@ -16,7 +17,6 @@ class Authenticator:
                 self.accounts.append(
                     {"name": item["name"], "code_gener": pyotp.totp.TOTP(item["code"])}
                 )
-        print(self.accounts)
 
     def save_secret(self, secret_code: str):
         print("ok")
@@ -25,4 +25,4 @@ class Authenticator:
         for item in self.accounts:
             if item["name"] == name:
                 return item["code_gener"].now()
-        return ''
+        return ""

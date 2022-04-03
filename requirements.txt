@@ -2,3 +2,4 @@ PyGObject==3.42.0
 PyGObject-stubs==0.0.8
 pyotp==2.6.0
 numpy==1.22.0
+pyinstaller==4.10
