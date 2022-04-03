@@ -6,7 +6,7 @@ import datetime
 from src.authenticator import Authenticator
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk, GLib, Gdk
 
 
 class AccountBox:
@@ -20,8 +20,9 @@ class Application(Gtk.Window):
         super().__init__(title="Authenticator")
 
         self.authenticator = Authenticator()
+        self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
 
-        root_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=200)
+        root_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
         root_box.set_margin_start(20)
         root_box.set_margin_end(20)
         root_box.set_margin_top(20)
@@ -45,15 +46,26 @@ class Application(Gtk.Window):
                 continue
             name_label = Gtk.Label(label=account_name)
             code_label = Gtk.Label(label=self.authenticator.get_code(account["name"]))
+            copy_button = Gtk.Button(label = 'Copy')
+            copy_button.connect('clicked', self.copy_text, account_name)
             code_box.pack_start(name_label, True, True, 0)
             code_box.pack_start(code_label, True, True, 0)
+            code_box.pack_start(copy_button, True, True, 0)
             root_box.add(code_box)
             self.account_boxes.append(AccountBox(name_label, code_label))
 
         root_box.add(form_box)
         self.add(root_box)
 
-    def on_click_button(self, button):
+    def copy_text(self, button, name):
+        print('go to this')
+        print(name)
+        for account in self.account_boxes:
+            if account.name_label.get_text() == name:
+                print(account.code_label.get_text())
+                self.clipboard.set_text(account.code_label.get_text(), -1)
+
+    def on_click_button(self):
         print(self.input.get_text())
 
     def update_code(self):
