@@ -44,13 +44,34 @@ class Application(Gtk.Window):
             account_name = account["name"]
             if not isinstance(account_name, str):
                 continue
-            name_label = Gtk.Label(label=account_name)
+
+            labels_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            account_name_arr = account_name.split(":")
+            name_text = f"{account_name_arr[0]} ({account_name_arr[1]})"
+
+            if len(name_text) > 42:
+                name_text = name_text[:40] + '...'
+
+            name_label = Gtk.Label(label=name_text)
+            name_label.set_name(account_name)
+            name_label.set_xalign(0)
+
             code_label = Gtk.Label(label=self.authenticator.get_code(account["name"]))
+            code_label.set_xalign(0)
+            code_label.set_margin_start(0)
+            labels_box.set_size_request(300, -1)
+            labels_box.pack_start(name_label, True, True, 0)
+            labels_box.pack_start(code_label, True, True, 0)
+
+            button_box = Gtk.Box()
             copy_button = Gtk.Button(label="Copy")
+            copy_button.set_property("width-request", 20)
             copy_button.connect("clicked", self.copy_text, account_name)
-            code_box.pack_start(name_label, True, True, 0)
-            code_box.pack_start(code_label, True, True, 0)
-            code_box.pack_start(copy_button, True, True, 0)
+            button_box.set_size_request(50, -1)
+            button_box.add(copy_button)
+
+            code_box.pack_start(labels_box, True, True, 0)
+            code_box.pack_start(button_box, True, True, 0)
             root_box.add(code_box)
             self.account_boxes.append(AccountBox(name_label, code_label))
 
@@ -66,16 +87,15 @@ class Application(Gtk.Window):
                 self.clipboard.set_text(account.code_label.get_text(), -1)
 
     def on_click_button(self):
-        print(self.input.get_text())
+        auth_code = self.input.get_text()
+        print(auth_code)
 
     def update_code(self):
         #  print("executed")
         for i in range(len(self.account_boxes)):
-            account_name = self.account_boxes[i].name_label.get_text()
-            print(account_name)
-            self.account_boxes[i].code_label.set_text(
-                self.authenticator.get_code(account_name)
-            )
+            account_name = self.account_boxes[i].name_label.get_name()
+            code = self.authenticator.get_code(account_name)
+            self.account_boxes[i].code_label.set_text(code)
 
 
 global cnt
