@@ -2,11 +2,14 @@
 
 import gi
 import datetime
+import time
 
-from src.authenticator import Authenticator
+from src.authenticator import AuthenticatorDomain
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib, Gdk
+
+global application
 
 
 class AccountBox:
@@ -19,7 +22,7 @@ class Application(Gtk.Window):
     def __init__(self):
         super().__init__(title="Authenticator")
 
-        self.authenticator = Authenticator()
+        self.authenticator = AuthenticatorDomain()
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
 
         root_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
@@ -28,16 +31,6 @@ class Application(Gtk.Window):
         root_box.set_margin_top(20)
         root_box.set_margin_bottom(20)
 
-        form_box = Gtk.Box()
-
-        self.input = Gtk.Entry()
-        form_box.pack_start(self.input, True, True, 0)
-
-        self.button = Gtk.Button(label="Add")
-        self.button.set_margin_start(20)
-        self.button.connect("clicked", self.on_click_button)
-        form_box.pack_start(self.button, True, True, 0)
-
         self.account_boxes = []
         for account in self.authenticator.accounts:
             code_box = Gtk.Box()
@@ -45,12 +38,12 @@ class Application(Gtk.Window):
             if not isinstance(account_name, str):
                 continue
 
-            labels_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            labels_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
             account_name_arr = account_name.split(":")
             name_text = f"{account_name_arr[0]} ({account_name_arr[1]})"
 
             if len(name_text) > 42:
-                name_text = name_text[:40] + '...'
+                name_text = name_text[:40] + "..."
 
             name_label = Gtk.Label(label=name_text)
             name_label.set_name(account_name)
@@ -75,20 +68,45 @@ class Application(Gtk.Window):
             root_box.add(code_box)
             self.account_boxes.append(AccountBox(name_label, code_label))
 
+        form_box = Gtk.Box()
+
+        entry_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        self.site_input = Gtk.Entry()
+        self.site_input.set_placeholder_text("Website")
+        self.account_input = Gtk.Entry()
+        self.account_input.set_placeholder_text("Account")
+        self.code_input = Gtk.Entry()
+        self.code_input.set_placeholder_text("Secret key")
+        entry_box.pack_start(self.site_input, True, True, 0)
+        entry_box.pack_start(self.account_input, True, True, 0)
+        entry_box.pack_start(self.code_input, True, True, 0)
+
+        form_box.pack_start(entry_box, True, True, 0)
+
+        button_box = Gtk.Box()
+        self.button = Gtk.Button(label="Add")
+        self.button.connect("clicked", self.on_click_button)
+        button_box.pack_start(self.button, True, True, 0)
+        button_box.set_margin_start(20)
+        button_box.set_size_request(90, 20)
+
+        form_box.pack_start(button_box, False, True, 0)
+
         root_box.add(form_box)
         self.add(root_box)
 
     def copy_text(self, button, name):
-        print("go to this")
-        print(name)
         for account in self.account_boxes:
             if account.name_label.get_text() == name:
                 print(account.code_label.get_text())
                 self.clipboard.set_text(account.code_label.get_text(), -1)
 
-    def on_click_button(self):
-        auth_code = self.input.get_text()
-        print(auth_code)
+    def on_click_button(self, button):
+        account = self.account_input.get_text()
+        website = self.site_input.get_text()
+        secret_code = self.code_input.get_text()
+        self.authenticator.save_secret(website + ":" + account, secret_code)
+        self.queue_draw()
 
     def update_code(self):
         #  print("executed")
